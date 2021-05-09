@@ -8,11 +8,6 @@ app.use(express.json());
 
 const repositories = [];
 
-function updateLikes(repository) {
-  repository.likes++;
-  return repository.likes;
-}
-
 app.get("/repositories", (request, response) => {
   return response.json(repositories);
 });
@@ -40,26 +35,21 @@ app.put("/repositories/:id", (request, response) => {
   if (!isUUID) return response.status(404).json({ error: "Invalid ID" });
 
   const updatedRepository = request.body;
-  console.log(updatedRepository);
 
-  // const repositoryIndex = repositories.findindex(
-  //   (repository) => repository.id === id
-  // );
+  const repositoryIndex = repositories.findIndex(
+    (repository) => repository.id === id
+  );
 
-  // if (repositoryIndex < 0) {
-  //   return response.status(404).json({ error: "Repository not found" });
-  // }
-  const repository = repositories.find((repository) => repository.id === id);
-
-  if (!repository)
+  if (repositoryIndex < 0)
     return response.status(404).json({ error: "Repository not found" });
 
-  for (attribute in updatedRepository) {
-    if (attribute != "likes")
-      repository[attribute] = updatedRepository[attribute];
-  }
+  repositories[repositoryIndex] = {
+    ...repositories[repositoryIndex],
+    ...updatedRepository,
+    likes: repositories[repositoryIndex].likes,
+  };
 
-  return response.json(repository);
+  return response.json(repositories[repositoryIndex]);
 });
 
 app.delete("/repositories/:id", (request, response) => {
@@ -90,7 +80,7 @@ app.post("/repositories/:id/like", (request, response) => {
   }
 
   const repository = repositories[repositoryIndex];
-  const likes = updateLikes(repository);
+  const likes = ++repository.likes;
 
   return response.json({ likes });
 });
